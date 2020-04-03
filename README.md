@@ -38,6 +38,9 @@ plt.plot(proph, label = 'Prophet')
 plt.legend()
 plt.show()
 ```
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_image_1.png?raw=true "Output 1")
+
+
 
 An example using mean changepoints:
 ```python
