@@ -117,7 +117,7 @@ y = data['Low']
 y = y[-730:]
 
 #create Lazy Prophet class
-boosted_model = lp.LazyProphet(freq = 0, 
+boosted_model = lp.LazyProphet(freq = None, 
                             estimator = 'mean', 
                             approximate_splits = True)
 #Fits on just the time series
