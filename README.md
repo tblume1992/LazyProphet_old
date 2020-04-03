@@ -64,6 +64,7 @@ import quandl
 import fbprophet
 import pandas as pd
 import matplotlib.pyplot as plt
+import LazyProphet as lp
 
 #Get bitcoin data
 data = quandl.get("BITSTAMP/USD")
@@ -110,6 +111,7 @@ What is the impact of the coronavirus?
 import quandl
 import fbprophet
 import pandas as pd
+import LazyProphet as lp
 
 #Get bitcoin data
 data = quandl.get("BITSTAMP/USD")
