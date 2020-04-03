@@ -103,3 +103,28 @@ plt.show()
 ```
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_1.png?raw=true "Output 1")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_trend.png?raw=true "Output 1")
+
+```python
+import quandl
+import fbprophet
+import pandas as pd
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+y = data['Low']
+y = y[-730:]
+
+#create Lazy Prophet class
+boosted_model = LazyProphet(freq = 0, 
+                            estimator = 'mean', 
+                            approximate_splits = True)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+
+#Potential impact of coronavirus with a 'still normal' date of Feb 1st
+pct_change = output['trend'].loc[(output['trend'].index > '2020-02-01')].pct_change()
+pct_change = pct_change.replace(to_replace=0, method='ffill')
+impact = np.mean(pct_change)
+print(f'Maybe like {int(impact*100)} percent?')
+```
