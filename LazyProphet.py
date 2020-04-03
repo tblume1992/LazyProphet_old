@@ -91,7 +91,7 @@ class LazyProphet():
     gradient = gradient.sort_values(ascending = False)[:100]
     proposals = list(gradient.index)
     proposals = [i for i in proposals if i > 10]
-    proposals = [i for i in proposals if i < len(self.boosted_data)]
+    proposals = [i for i in proposals if i < len(self.boosted_data) - 10]
     
     return proposals
     
