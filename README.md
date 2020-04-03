@@ -21,6 +21,7 @@ import quandl
 import fbprophet
 import pandas as pd
 import matplotlib.pyplot as plt
+import LazyProphet as lp
 
 #Get bitcoin data
 data = quandl.get("BITSTAMP/USD")
@@ -35,7 +36,7 @@ model.fit(df)
 forecast = model.predict(df)
 
 #create Lazy Prophet class
-boosted_model = LazyProphet(freq = 365, 
+boosted_model = lp.LazyProphet(freq = 365, 
                             estimator = 'linear', 
                             max_boosting_rounds = 50,
                             approximate_splits = True,
@@ -77,7 +78,7 @@ model.fit(df)
 forecast = model.predict(df)
 
 #create Lazy Prophet class
-boosted_model = LazyProphet(freq = 365, 
+boosted_model = lp.LazyProphet(freq = 365, 
                             estimator = 'mean', 
                             max_boosting_rounds = 50,
                             approximate_splits = True,
@@ -116,7 +117,7 @@ y = data['Low']
 y = y[-730:]
 
 #create Lazy Prophet class
-boosted_model = LazyProphet(freq = 0, 
+boosted_model = lp.LazyProphet(freq = 0, 
                             estimator = 'mean', 
                             approximate_splits = True)
 #Fits on just the time series
