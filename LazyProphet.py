@@ -173,11 +173,7 @@ class LazyProphet():
       trends.append(trend)
       seasonalities.append(seasonality)
       total_trend = np.sum(trends, axis = 0)
-      plt.plot(total_trend)
       total_seasonalities = np.sum(seasonalities, axis = 0)
-      plt.plot(self.time_series)
-      plt.plot(total_seasonalities)
-      plt.show()
       round_cost = self.calc_cost(total_trend + total_seasonalities, i)
       if i == 0:
         cost = round_cost
