@@ -10,7 +10,7 @@ class LazyProphet():
   def __init__(self, 
                freq = 0, 
                estimator = 'linear', 
-               max_boosting_rounds = 5, 
+               max_boosting_rounds = 50, 
                l2 = 1, 
                poly = 3, 
                nested_seasonality = False, 
