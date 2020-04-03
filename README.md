@@ -82,4 +82,4 @@ plt.plot(output['trend'].reset_index(drop = True), label = 'Lazy')
 plt.plot(y.reset_index(drop = True))
 plt.legend()
 plt.show()
-'''
+```
