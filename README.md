@@ -37,7 +37,7 @@ plt.plot(y, label = 'Actual')
 plt.plot(proph, label = 'Prophet')
 plt.legend()
 plt.show()
-'''
+```
 
 An example using mean changepoints:
 ```python
