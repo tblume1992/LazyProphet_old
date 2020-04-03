@@ -1,4 +1,19 @@
 # LazyProphet
+Time Series decomp via gradient boosting with a couple different estimators of trend:
+  -ridge: approximates trend via a global fit from a ridge regression
+  -linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE
+  -mean: approximates trend via local mean change point model
+  
+Seasonality is initially a naive average over every freq number of points.  After boosting is complete we take the top 15 (or whatever you select as seasonal_smoothing) components from fft. Set to 0 or None for no seasonality.
+ 
+Notes:
+1.  Number of gradient boosting rounds can be set to a max but once our cost function is minimized it will stop
+2.  You probably want to always have ols_constant = False for linear estimator
+3.  We can approximate where splits should occur for our local estimators (mean and linear) which speeds things up quite a bit 
+4.  The regularization parameter effects the number of boosting rounds whereas l2 just effects the ridge regression regularization
+
+
+
 Quick example: 
 
 ```python
