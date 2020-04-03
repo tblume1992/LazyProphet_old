@@ -86,3 +86,5 @@ plt.plot(y.reset_index(drop = True))
 plt.legend()
 plt.show()
 ```
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_trend.png?raw=true "Output 1")
