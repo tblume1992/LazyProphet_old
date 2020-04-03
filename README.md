@@ -94,6 +94,17 @@ plt.plot(y, label = 'Actual')
 plt.plot(proph, label = 'Prophet')
 plt.legend()
 plt.show()
+#plot trend
+plt.plot(forecast['trend'], label = 'Prophet')
+plt.plot(output['trend'].reset_index(drop = True), label = 'Lazy')
+plt.plot(y.reset_index(drop = True))
+plt.legend()
+plt.show()
+#plot seasonality
+plt.plot(forecast['additive_terms'], label = 'Prophet')
+plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
+plt.legend()
+plt.show()
 ```
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_ridge_1.png?raw=true "Output 1")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_ridge_trend.png?raw=true "Output 1")
