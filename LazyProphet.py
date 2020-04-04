@@ -15,7 +15,7 @@ class LazyProphet():
                poly = 3, 
                nested_seasonality = False, 
                ols_constant = False,
-               seasonal_smoothing = 15,
+               seasonal_smoothing = None,
                approximate_splits = False,
                regularization = 1.2):
     
