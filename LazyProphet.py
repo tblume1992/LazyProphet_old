@@ -140,7 +140,7 @@ class LazyProphet():
   def fit(self, time_series):
     self.time_series_index = time_series.index
     self.time_series = time_series.values
-    if self.seasonal_esti == 'harmonic':
+    if self.seasonal_esti == 'harmonic' and self.freq:
       self.get_fourier_series(np.arange(len(self.time_series)), self.freq, self.seasonal_smoothing)
     trends = []
     seasonalities = []
