@@ -54,7 +54,7 @@ plt.plot(proph, label = 'Prophet')
 plt.legend()
 plt.show()
 ```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_image_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_image_1.png?raw=true "Output 1")
 
 An example using ridge and looking at the trend and seasonality decomp:
 ```python
@@ -106,9 +106,9 @@ plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
 plt.legend()
 plt.show()
 ```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_ridge_1.png?raw=true "Output 1")
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_ridge_trend.png?raw=true "Output 1")
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_ridge_seasonality.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_trend.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_seasonality.png?raw=true "Output 1")
 
 An example using mean changepoints:
 ```python
@@ -155,8 +155,8 @@ plt.plot(y.reset_index(drop = True))
 plt.legend()
 plt.show()
 ```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_1.png?raw=true "Output 1")
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/lazy_mean_trend.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean_trend.png?raw=true "Output 1")
 
 What is the impact of the coronavirus?
 ```python
