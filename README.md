@@ -4,7 +4,7 @@ Time Series decomp via gradient boosting with a couple different estimators of t
   * linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE
   * mean: approximates trend via local mean change point model
   
-Seasonality is initially a naive average over every freq number of points.  After boosting is complete we take the top 15 (or whatever you select as seasonal_smoothing) components from fft. Set to 0 or None for no seasonality.
+Seasonality can be naive averaging over freq number of time periods or 'harmonic' which calculates seasonality similarly to Prophet using fourier series.
  
 Notes:
 1.  Number of gradient boosting rounds can be set to a max but once our cost function is minimized it will stop
