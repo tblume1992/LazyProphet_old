@@ -17,7 +17,7 @@ class LazyProphet():
                ols_constant = False,
                seasonal_smoothing = 15,
                approximate_splits = False,
-               regularization = 1.0):
+               regularization = 1.2):
     
     self.l2 = l2
     self.nested_seasonality = nested_seasonality
@@ -58,8 +58,8 @@ class LazyProphet():
           predicted = np.append(predicted1,predicted2)
       
     return predicted
-
-  def ols(self,y, bias, ols_constant = False):
+  
+  def ols(self, y, bias, ols_constant = False):
     y = np.array(y - bias).reshape(-1, 1)
     X = np.array(range(len(y))).reshape(-1, 1)
     if ols_constant:
@@ -132,7 +132,9 @@ class LazyProphet():
   
   def calc_cost(self, prediction, c):
     n = len(self.time_series)
-    return n*np.log(np.sum((self.time_series - prediction )**2)/n) + ((c)**self.regularization) * np.log(n)
+    cost = n*np.log(np.sum((self.time_series - prediction )**2)/n) + \
+          ((c + 1)**self.regularization) * np.log(n)
+    return cost
   
   def fit(self, time_series):
     self.time_series_index = time_series.index
@@ -181,25 +183,42 @@ class LazyProphet():
         cost = self.calc_cost(total_trend + total_seasonalities, i)
       else:
         break
-    total_seasonalities = self.filtered_seasonality(total_seasonalities)
+    if self.seasonal_smoothing:
+      self.total_seasonalities = self.filtered_seasonality(total_seasonalities)
+    else:
+      self.total_seasonalities = total_seasonalities
+    self.total_trend = total_trend
     if self.nested_seasonality:
       total_nested_seasonality = np.sum(nested_seasonalities, axis = 0)
     output = {}
     output['y'] = self.time_series
     if self.nested_seasonality:
-      output['yhat'] = pd.Series(total_trend + 
-                                total_seasonalities + 
+      output['yhat'] = pd.Series(self.total_trend + 
+                                self.total_seasonalities + 
                                 total_nested_seasonality, 
                                 index = self.time_series_index).astype(float)
     else:
-      output['yhat'] = pd.Series(total_trend + 
-                                total_seasonalities, 
+      output['yhat'] = pd.Series(self.total_trend + 
+                                self.total_seasonalities, 
                                 index = self.time_series_index).astype(float)
     output['trend'] = pd.Series(total_trend, index = self.time_series_index)
-    output['seasonality'] = pd.Series(total_seasonalities, 
+    output['seasonality'] = pd.Series(self.total_seasonalities, 
                                       index = self.time_series_index)
     if self.nested_seasonality:
       output['nested_seasonality'] = pd.Series(total_nested_seasonality, 
                                                 index = self.time_series_index)
       
     return output
+
+  def extrapolate(self, n_steps = 10):
+    if self.estimator == 'mean':
+      extrapolated_trend = np.tile(self.total_trend[-1], n_steps)
+    else:
+      extrapolated_trend = (self.total_trend[-1] - self.total_trend[-2])* \
+                            np.arange(1,n_steps + 1) + \
+                            self.total_trend[-1]
+    extrapolated_seasonality = np.resize(self.total_seasonalities[:self.freq], 
+                                         len(self.total_seasonalities) + n_steps)[-n_steps:]
+    extrapolated_series = extrapolated_trend + extrapolated_seasonality
+    
+    return extrapolated_series
