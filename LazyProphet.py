@@ -4,7 +4,7 @@ from scipy import signal
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 
-class LazyProphet():
+class LazyProphet:
   def __init__(self, 
                freq = 0, 
                estimator = 'linear', 
@@ -16,7 +16,8 @@ class LazyProphet():
                seasonal_smoothing = 10,
                approximate_splits = False,
                regularization = 1.2,
-               seasonal_esti = 'harmonic'):
+               seasonal_esti = 'harmonic',
+               split_cost = 'mae'):
     
     self.l2 = l2
     self.nested_seasonality = nested_seasonality
@@ -29,6 +30,7 @@ class LazyProphet():
     self.approximate_splits = approximate_splits
     self.regularization = regularization
     self.seasonal_esti = seasonal_esti
+    self.split_cost = split_cost
     
   def ridge(self,y):
     if len(y) == 1:
@@ -69,6 +71,14 @@ class LazyProphet():
     
     return predicted
 
+  def get_split_cost(self, y, split1, split2):
+    if self.split_cost == 'sse':
+      cost = np.sum((y - np.append(split1,split2))**2)
+    elif self.split_cost == 'mae':
+      cost = np.mean(np.abs(y - np.append(split1,split2)))
+      
+    return cost
+
   def linear(self,y):
     if len(y) == 1:
       predicted = np.array(y[0])
@@ -77,7 +87,7 @@ class LazyProphet():
       for index, i in enumerate(proposals): 
         predicted1 = self.ols(y[:i], 0, ols_constant = True)
         predicted2 = self.ols(y[i:], predicted1[-1], ols_constant = self.ols_constant)
-        iteration_mae = np.mean(np.abs(y - np.append(predicted1,predicted2)))
+        iteration_mae = self.get_split_cost(y, predicted1, predicted2)
         if index == 0:
           mae = iteration_mae
         if iteration_mae <= mae:
@@ -175,8 +185,7 @@ class LazyProphet():
         nested_seasonalities.append(nested_seasonal_factor)
         self.boosted_data = self.boosted_data-(trend+seasonality+nested_seasonal_factor)
       else:
-        self.boosted_data = self.boosted_data-(trend+seasonality)
-      
+        self.boosted_data = self.boosted_data-(trend+seasonality)      
       errors.append(np.mean(np.abs(self.boosted_data)))
       trends.append(trend)
       seasonalities.append(seasonality)
@@ -187,10 +196,11 @@ class LazyProphet():
         cost = round_cost
       if round_cost <= cost:
         cost = self.calc_cost(total_trend + total_seasonalities, i)
+        self.total_trend = total_trend
+        self.total_seasonalities = total_seasonalities
       else:
         break
-    self.total_trend = total_trend
-    self.total_seasonalities = total_seasonalities
+
     if self.nested_seasonality:
       total_nested_seasonality = np.sum(nested_seasonalities, axis = 0)
     output = {}
@@ -204,7 +214,7 @@ class LazyProphet():
       output['yhat'] = pd.Series(self.total_trend + 
                                 self.total_seasonalities, 
                                 index = self.time_series_index).astype(float)
-    output['trend'] = pd.Series(total_trend, index = self.time_series_index)
+    output['trend'] = pd.Series(self.total_trend, index = self.time_series_index)
     output['seasonality'] = pd.Series(self.total_seasonalities, 
                                       index = self.time_series_index)
     if self.nested_seasonality:
