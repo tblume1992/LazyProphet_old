@@ -184,3 +184,50 @@ pct_change = pct_change.replace(to_replace=0, method='ffill')
 impact = np.mean(pct_change)
 print(f'Maybe like {int(impact*100)} percent?')
 ```
+Some simulated data:
+```python
+N = 730
+t = np.linspace(0, 4*np.pi, N)
+sine = 3.0*np.cos(t+0.001) + 0.5 + np.random.randn(N)
+y = pd.Series(sine)
+#some datetime index
+y.index = pd.date_range(start=None, end='2020-04-05', periods=N)
+df = pd.DataFrame(y, columns = ['y'])
+df['ds'] = y.index
+#fit prophet
+model = fbprophet.Prophet(yearly_seasonality = True)
+model.fit(df)
+forecast = model.predict(df)
+#%%
+#create Lazy Prophet class
+boosted_model = LazyProphet(freq = 365, 
+                            approximate_splits = True,
+                            )
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+#plot forecasts vs actual
+tsboosted_ = output['yhat']
+proph = forecast['yhat']
+plt.plot(tsboosted_, label = 'Lazy', color = 'black')
+proph.index = tsboosted_.index
+plt.plot(y, label = 'Actual')
+plt.plot(proph, label = 'Prophet')
+plt.legend()
+plt.show()
+
+#plot trend
+plt.plot(forecast['trend'], label = 'Prophet')
+plt.plot(output['trend'].reset_index(drop = True), label = 'Lazy')
+plt.plot(y.reset_index(drop = True))
+plt.legend()
+plt.show()
+#plot seasonality
+plt.plot(forecast['additive_terms'], label = 'Prophet')
+plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
+plt.legend()
+plt.show()
+```
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_output.png?raw=true "Output")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_trend.png?raw=true "Trends")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_seasonality.png?raw=true "Seasonality")
