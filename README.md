@@ -1,6 +1,6 @@
 # LazyProphet
 Time Series decomp via gradient boosting with a couple different estimators of trend:
-  * ridge: approximates trend via a global fit from a ridge regression (don't really need ridge since we are boosting but oh well)
+  * ridge: approximates trend via a global fit from a polynomial ridge regression (don't really need ridge since we are boosting but oh well)
   * linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE
   * mean: approximates trend via local mean change point model
   
