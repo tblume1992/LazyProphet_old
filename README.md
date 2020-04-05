@@ -186,6 +186,11 @@ print(f'Maybe like {int(impact*100)} percent?')
 ```
 Some simulated data:
 ```python
+import quandl
+import fbprophet
+import pandas as pd
+import LazyProphet as lp
+
 N = 730
 t = np.linspace(0, 4*np.pi, N)
 sine = 3.0*np.cos(t+0.001) + 0.5 + np.random.randn(N)
@@ -200,7 +205,7 @@ model.fit(df)
 forecast = model.predict(df)
 #%%
 #create Lazy Prophet class
-boosted_model = LazyProphet(freq = 365, 
+boosted_model = lp.LazyProphet(freq = 365, 
                             approximate_splits = True,
                             )
 #Fits on just the time series
