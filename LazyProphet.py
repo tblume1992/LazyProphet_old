@@ -17,7 +17,8 @@ class LazyProphet:
                approximate_splits = False,
                regularization = 1.2,
                seasonal_esti = 'harmonic',
-               split_cost = 'mae'):
+               split_cost = 'mae',
+               global_cost = 'mbic'):
     
     self.l2 = l2
     self.nested_seasonality = nested_seasonality
@@ -31,6 +32,7 @@ class LazyProphet:
     self.regularization = regularization
     self.seasonal_esti = seasonal_esti
     self.split_cost = split_cost
+    self.global_cost = global_cost
     
   def ridge(self,y):
     if len(y) == 1:
@@ -52,7 +54,7 @@ class LazyProphet:
       for index, i in enumerate(proposals):  
         predicted1 = np.tile(np.mean(y[:i]), len(y[:i]))
         predicted2 = np.tile(np.mean(y[i:]), len(y[i:]))
-        iteration_mae = np.mean(np.abs(y - np.append(predicted1,predicted2)))
+        iteration_mae = self.get_split_cost(y, predicted1, predicted2)
         if index == 0:
           mae = iteration_mae
         if iteration_mae <= mae:
@@ -72,8 +74,8 @@ class LazyProphet:
     return predicted
 
   def get_split_cost(self, y, split1, split2):
-    if self.split_cost == 'sse':
-      cost = np.sum((y - np.append(split1,split2))**2)
+    if self.split_cost == 'mse':
+      cost = np.mean((y - np.append(split1,split2))**2)
     elif self.split_cost == 'mae':
       cost = np.mean(np.abs(y - np.append(split1,split2)))
       
@@ -143,8 +145,14 @@ class LazyProphet:
   
   def calc_cost(self, prediction, c):
     n = len(self.time_series)
-    cost = n*np.log(np.sum((self.time_series - prediction )**2)/n) + \
-          ((c + 1)**self.regularization) * np.log(n)
+    if self.global_cost == 'maic':
+      cost = 2*(c**self.regularization) + n*np.log(np.sum((self.time_series - prediction )**2)/n)
+    if self.global_cost == 'maicc':
+      cost = (2*c**2 + 2*c)/(n-c-1) + 2*(c**self.regularization) + \
+              n*np.log(np.sum((self.time_series - prediction )**2)/n)    
+    elif self.global_cost == 'mbic':
+      cost = n*np.log(np.sum((self.time_series - prediction )**2)/n) + \
+            (c**self.regularization) * np.log(n)
     return cost
   
   def fit(self, time_series):
@@ -195,11 +203,11 @@ class LazyProphet:
       if i == 0:
         cost = round_cost
       if round_cost <= cost:
-        cost = self.calc_cost(total_trend + total_seasonalities, i)
+        cost = round_cost
         self.total_trend = total_trend
         self.total_seasonalities = total_seasonalities
       else:
-        break
+        pass
 
     if self.nested_seasonality:
       total_nested_seasonality = np.sum(nested_seasonalities, axis = 0)
