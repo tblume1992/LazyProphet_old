@@ -207,7 +207,7 @@ class LazyProphet:
         self.total_trend = total_trend
         self.total_seasonalities = total_seasonalities
       else:
-        pass
+        break
 
     if self.nested_seasonality:
       total_nested_seasonality = np.sum(nested_seasonalities, axis = 0)
