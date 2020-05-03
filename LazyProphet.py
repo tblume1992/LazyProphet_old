@@ -33,6 +33,7 @@ class LazyProphet:
     self.seasonal_esti = seasonal_esti
     self.split_cost = split_cost
     self.global_cost = global_cost
+    self.coefs = np.ones((1,poly))
     
   def ridge(self,y):
     if len(y) == 1:
@@ -42,6 +43,7 @@ class LazyProphet:
       X = np.array(list(range(len(y))), ndmin=1).reshape((len(y), 1))   
       X = PolynomialFeatures(degree = self.poly, include_bias = False).fit(X).transform(X) 
       clf = Ridge(alpha=self.l2).fit(X, y)
+      self.coefs += clf.coef_
       predicted = clf.predict(X)  
       
     return predicted
