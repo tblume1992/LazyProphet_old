@@ -178,11 +178,18 @@ plt.plot(output['trend'].reset_index(drop = True), label = 'Lazy')
 plt.plot(y.reset_index(drop = True))
 plt.legend()
 plt.show()
+#plot seasonality
+plt.plot(forecast['additive_terms'], label = 'Prophet')
+plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
+plt.legend()
+plt.show()
 ```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean.png?raw=true "Output 1")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean_trend.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_mean_seasonality.png?raw=true "Output 1")
 
-What is the impact of the coronavirus?
+
+Toy Example: What is the potential impact of the coronavirus?
 ```python
 import quandl
 import fbprophet
