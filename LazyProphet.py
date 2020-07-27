@@ -4,7 +4,7 @@ from scipy import signal
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 import statsmodels.api as sm
-
+from scipy import stats
 
 class LazyProphet:
   def __init__(self, 
