@@ -37,51 +37,16 @@ forecast = model.predict(df)
 
 #create Lazy Prophet class
 boosted_model = lp.LazyProphet(freq = 365, 
-                            estimator = 'linear', 
-                            max_boosting_rounds = 50,
-                            approximate_splits = True,
-                            regularization = 1.2)
-#Fits on just the time series
-#returns a dictionary with the decomposition
-output = boosted_model.fit(y)
-#plot forecasts vs actual
-tsboosted_ = output['yhat']
-proph = forecast['yhat']
-plt.plot(tsboosted_, label = 'Lazy', color = 'black')
-proph.index = tsboosted_.index
-plt.plot(y, label = 'Actual')
-plt.plot(proph, label = 'Prophet')
-plt.legend()
-plt.show()
-```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_image_1.png?raw=true "Output 1")
-
-An example using ridge and looking at the trend and seasonality decomp:
-```python
-import quandl
-import fbprophet
-import pandas as pd
-import matplotlib.pyplot as plt
-import LazyProphet as lp
-
-#Get bitcoin data
-data = quandl.get("BITSTAMP/USD")
-y = data['Low']
-y = y[-730:]
-df = pd.DataFrame(y)
-df['ds'] = y.index
-#adjust to make ready for Prophet
-df.columns = ['y', 'ds']
-model = fbprophet.Prophet()
-model.fit(df)
-forecast = model.predict(df)
-
-#create Lazy Prophet class
-boosted_model = lp.LazyProphet(freq = 365, 
-                            estimator = 'ridge', 
-                            max_boosting_rounds = 50,
-                            approximate_splits = True,
-                            regularization = 1.2)
+                               estimator = 'linear',
+                               approximate_splits = True,
+                               regularization = 1.2,
+                               global_cost = 'maicc',
+                               split_cost = 'mse',
+                               seasonal_regularization = 'auto',
+                               trend_dampening = 0,
+                               max_boosting_rounds = 50,
+                               exogenous = None
+                                    )
 #Fits on just the time series
 #returns a dictionary with the decomposition
 output = boosted_model.fit(y)
@@ -106,7 +71,66 @@ plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
 plt.legend()
 plt.show()
 ```
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_1.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_linear_trend.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_linear_seasonality.png?raw=true "Output 1")
+
+An example using ridge and looking at the trend and seasonality decomp:
+```python
+import quandl
+import fbprophet
+import pandas as pd
+import matplotlib.pyplot as plt
+import LazyProphet as lp
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+y = data['Low']
+y = y[-730:]
+df = pd.DataFrame(y)
+df['ds'] = y.index
+#adjust to make ready for Prophet
+df.columns = ['y', 'ds']
+model = fbprophet.Prophet()
+model.fit(df)
+forecast = model.predict(df)
+
+#create Lazy Prophet class
+boosted_model = lp.LazyProphet(freq = 365, 
+                               estimator = 'ridge',
+                               approximate_splits = True,
+                               regularization = 1.2,
+                               global_cost = 'maicc',
+                               split_cost = 'mse',
+                               seasonal_regularization = 'auto',
+                               trend_dampening = 0,
+                               max_boosting_rounds = 50,
+                               exogenous = None)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+#plot forecasts vs actual
+tsboosted_ = output['yhat']
+proph = forecast['yhat']
+plt.plot(tsboosted_, label = 'Lazy', color = 'black')
+proph.index = tsboosted_.index
+plt.plot(y, label = 'Actual')
+plt.plot(proph, label = 'Prophet')
+plt.legend()
+plt.show()
+#plot trend
+plt.plot(forecast['trend'], label = 'Prophet')
+plt.plot(output['trend'].reset_index(drop = True), label = 'Lazy')
+plt.plot(y.reset_index(drop = True))
+plt.legend()
+plt.show()
+#plot seasonality
+plt.plot(forecast['additive_terms'], label = 'Prophet')
+plt.plot(output['seasonality'].reset_index(drop = True), label = 'Lazy')
+plt.legend()
+plt.show()
+```
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge.png?raw=true "Output 1")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_trend.png?raw=true "Output 1")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_ridge_seasonality.png?raw=true "Output 1")
 
