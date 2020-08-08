@@ -14,7 +14,7 @@ Notes:
 
 
 
-Quick example: 
+# Some basic examples: 
 
 ```python
 import quandl
@@ -268,7 +268,7 @@ plt.show()
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_trend.png?raw=true "Trends")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_seasonality.png?raw=true "Seasonality")
 
-Plotting the components:
+# Plotting the components:
 ```python
 import quandl
 import pandas as pd
@@ -292,7 +292,7 @@ output = boosted_model.fit(y)
 boosted_model.plot_components()
 ```
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_plot_components.png?raw=true "Output")
-
+# Dealing with Exogenous Variables
 Now let's take a look at exogenous variables which may have an effect on the BTC price. This is meant to be a demonstration using readily available information, the variables we use are just what comes with the Quandl request. 
 
 Exogenous variables are fit in the last step of the boosting loop and all coefficients and standard errors are updated using all boosting rounds so the coefficients most likely are regularized.
@@ -336,3 +336,5 @@ Ask            -2.09           14.19   -0.15    0.883
 Volume         -0.02            0.01   -1.80    0.073
 VWAP            1.11            0.51    2.16    0.031
 ```
+# Forecasting
+If you have no other variables and the problem is a simple Time Series setup then forecasting is just extrapolating the current measure of trend and seasonality utilizing the extrapolate(n_steps) method where n_steps is the number of steps to forecast.  This just returns a numpy array not a series so beware!
