@@ -337,7 +337,7 @@ Volume         -0.02            0.01   -1.80    0.073
 VWAP            1.11            0.51    2.16    0.031
 ```
 # Forecasting
-If you have no other variables and the problem is a simple Time Series setup then forecasting is just extrapolating the current measure of trend and seasonality utilizing the extrapolate(n_steps) method where n_steps is the number of steps to forecast.  This just returns a numpy array not a series so beware!
+If you have no other variables and the problem is a simple Time Series setup then forecasting is just extrapolating the current measure of trend and seasonality utilizing the extrapolate(n_steps, future_X = None) method where n_steps is the number of steps to forecast and future_X is a dataframe/array for the future values of exogenous variables if you fit the model with any.  This just returns a numpy array not a series so beware!
 ```python
 import quandl
 import pandas as pd
