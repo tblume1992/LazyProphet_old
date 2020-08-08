@@ -338,3 +338,57 @@ VWAP            1.11            0.51    2.16    0.031
 ```
 # Forecasting
 If you have no other variables and the problem is a simple Time Series setup then forecasting is just extrapolating the current measure of trend and seasonality utilizing the extrapolate(n_steps) method where n_steps is the number of steps to forecast.  This just returns a numpy array not a series so beware!
+```python
+import quandl
+import pandas as pd
+import matplotlib.pyplot as plt
+import LazyProphet as lp
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+#let's get our X matrix with the new variables to use
+X = data.drop('Low', axis = 1)
+X = X.iloc[-730:,:]
+y = data['Low']
+y = y[-730:]
+
+#create Lazy Prophet class
+boosted_model = lp.LazyProphet(freq = 365, 
+                            estimator = 'linear', 
+                            max_boosting_rounds = 200,
+                            approximate_splits = True,
+                            regularization = 1.2,
+                            exogenous = X)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+forecast = boosted_model.extrapolate(30)
+```
+Many times we are not sure if the current trend will hold and would like the trend to be dampened over the forecast horizon to have a 0 slope, this can be done with the trend_dampening argument when building the class.  For this metric- a .5 would mean that the trend hits roughly half the value of the unconstrained trend by the end of the forecast horizon.  This is achieved via exponential decay of the slope and is a smooth transition for all involved.
+```python
+import quandl
+import pandas as pd
+import matplotlib.pyplot as plt
+import LazyProphet as lp
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+#let's get our X matrix with the new variables to use
+X = data.drop('Low', axis = 1)
+X = X.iloc[-730:,:]
+y = data['Low']
+y = y[-730:]
+
+#create Lazy Prophet class
+boosted_model = lp.LazyProphet(freq = 365, 
+                            estimator = 'linear', 
+                            max_boosting_rounds = 200,
+                            approximate_splits = True,
+                            regularization = 1.2,
+                            exogenous = X,
+                            trend_dampening = .5)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+forecast = boosted_model.extrapolate(30)
+```
