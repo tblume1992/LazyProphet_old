@@ -7,7 +7,7 @@ Time Series decomp via gradient boosting with a couple different estimators of t
 Seasonality can be naive averaging over freq number of time periods or 'harmonic' which calculates seasonality similarly to Prophet using fourier series.
  
 Notes:
-1.  Number of gradient boosting rounds can be set to a max but once our cost function is minimized it will stop
+1.  Number of gradient boosting rounds can be set to a max but once our cost function is minimized it will stop unless a minimum is set
 2.  You probably want to always have ols_constant = False for linear estimator
 3.  We can approximate where splits should occur for our local estimators (mean and linear) which speeds things up quite a bit 
 4.  The regularization parameter effects the number of boosting rounds whereas l2 just effects the ridge regression regularization
@@ -267,3 +267,28 @@ plt.show()
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_output.png?raw=true "Output")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_trend.png?raw=true "Trends")
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_simulated_seasonality.png?raw=true "Seasonality")
+
+Plotting the components:
+```python
+import quandl
+import pandas as pd
+import matplotlib.pyplot as plt
+import LazyProphet as lp
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+y = data['Low']
+y = y[-730:]
+
+#create Lazy Prophet class
+boosted_model = lp.LazyProphet(freq = 365, 
+                            estimator = 'mean', 
+                            max_boosting_rounds = 50,
+                            approximate_splits = True,
+                            regularization = 1.2)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+boosted_model.plot_components()
+```
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_plot_components.png?raw=true "Output")
