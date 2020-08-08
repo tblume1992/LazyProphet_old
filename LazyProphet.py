@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 from scipy import signal
+from scipy import stats
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.linear_model import Ridge
 import statsmodels.api as sm
-from scipy import stats
+import matplotlib.pyplot as plt
 
 class LazyProphet:
   def __init__(self, 
@@ -24,9 +25,12 @@ class LazyProphet:
                trend_dampening = 0,
                seasonal_regularization = 'auto',   
                exogenous = None,
-               verbose = 1,
+               verbose = 0,
                n_split_proposals = 100,
-               min_samples = .15
+               min_samples = .15,
+               exclude_splits = [],
+               min_boosting_rounds = 0,
+               exogenous_fit = 'ols'
                ):
     
     self.l2 = l2
@@ -47,6 +51,9 @@ class LazyProphet:
     self.verbose = verbose
     self.n_split_proposals = n_split_proposals
     self.min_samples = min_samples
+    self.exclude_splits = exclude_splits
+    self.min_boosting_rounds = min_boosting_rounds
+    self.exogenous_fit = exogenous_fit
     if type(self.freq) != int:
         raise Exception('Frequency must be an int')
     
@@ -128,7 +135,8 @@ class LazyProphet:
     min_split_idx = int(len(self.boosted_data)*.1)
     proposals = [i for i in proposals if i > min_split_idx]
     proposals = [i for i in proposals if i < len(self.boosted_data) - min_split_idx]
-    
+    proposals = [i for i in proposals if i not in self.exclude_splits]
+
     return proposals
 
   def get_fourier_series(self, t, p=365, n=10):
@@ -188,6 +196,32 @@ class LazyProphet:
       cost = n*np.log(np.sum((self.time_series - prediction )**2)/n) + \
             (c**self.regularization) * np.log(n)
     return cost
+
+  def get_trend(self, time_series, iteration):
+    if self.estimator == 'ridge':
+      trend = self.ridge(self.boosted_data).reshape(self.boosted_data.size,)
+    elif self.estimator == 'mean':
+      if iteration == 0:
+        trend = np.tile(np.median(self.boosted_data), len(self.boosted_data))
+      else:
+        trend = self.mean(self.boosted_data).reshape(self.boosted_data.size,)
+    elif self.estimator == 'linear':
+      if iteration == 0:
+        trend = np.tile(np.median(self.boosted_data), len(self.boosted_data))
+        #trend = self.ols(self.boosted_data, 0, True).reshape(self.boosted_data.size,)
+      else:
+        trend = self.linear(self.boosted_data).reshape(self.boosted_data.size,)
+        
+    return trend
+
+  def get_seasonality(self, detrended):
+    if self.seasonal_esti == 'harmonic':
+      seasonality = self.get_harmonic_seasonality(detrended, self.freq)
+    elif self.seasonal_esti == 'naive':
+      seasonality = self.get_naive_seasonality(detrended, self.freq)
+    seasonality = np.tile(seasonality,
+                            int(len(self.time_series)/self.freq + 1))[:len(self.time_series)]
+    return seasonality
   
   def fit(self, time_series):
     self.time_series_index = time_series.index
@@ -202,26 +236,12 @@ class LazyProphet:
     exo_impact = []
     self.boosted_data = self.time_series
     for i in range(self.max_boosting_rounds):
-      if self.estimator == 'ridge':
-        trend = self.ridge(self.boosted_data).reshape(self.boosted_data.size,)
-      elif self.estimator == 'mean':
-        if i == 0:
-          trend = np.tile(np.median(self.boosted_data), len(self.boosted_data))
-        else:
-          trend = self.mean(self.boosted_data).reshape(self.boosted_data.size,)
-      elif self.estimator == 'linear':
-        if i == 0:
-          trend = self.ols(self.boosted_data, 0, True).reshape(self.boosted_data.size,)
-        else:
-          trend = self.linear(self.boosted_data).reshape(self.boosted_data.size,)
+      trend = self.get_trend(self.boosted_data, iteration = i)
       resid = self.boosted_data-trend
-      if self.seasonal_esti == 'harmonic':
-        seasonality = self.get_harmonic_seasonality(resid, self.freq)
-      elif self.seasonal_esti == 'naive':
-        seasonality = self.get_naive_seasonality(resid, self.freq)
       if self.freq:
-        seasonality = np.tile(seasonality,
-                              int(len(self.time_series)/self.freq + 1))[:len(self.time_series)]
+          seasonality = self.get_seasonality(detrended = resid)
+      else:
+          seasonality = np.zeros(len(resid))
       if self.nested_seasonality:
         nested_seasonal_factor = self.get_naive_seasonality(self.boosted_data-(trend + seasonality), 7)
         nested_seasonal_factor =  np.tile(nested_seasonal_factor,
@@ -231,11 +251,14 @@ class LazyProphet:
       else:
         self.boosted_data = self.boosted_data-(trend+seasonality)  
       if self.exogenous is not None:
-          ols_model = sm.OLS(self.boosted_data, self.exogenous).fit()
-          #print(ols_model.summary())
-          exo_predict = ols_model.predict(self.exogenous)
+          if self.exogenous_fit == 'ols':
+              exo_model = sm.OLS(self.boosted_data, self.exogenous).fit()
+              exo_predict = exo_model.predict(self.exogenous)
+          elif self.exogenous_fit == 'glm':
+              exo_model = sm.GLM(self.boosted_data, self.exogenous).fit()
+              exo_predict = exo_model.predict(self.exogenous)
           self.boosted_data = self.boosted_data - exo_predict
-          exo_impact.append((ols_model.params, ols_model.cov_params()))
+          exo_impact.append((exo_model.params, exo_model.cov_params()))
           exo_predicted.append(exo_predict)
       errors.append(np.mean(np.abs(self.boosted_data)))
       trends.append(trend)
@@ -243,10 +266,19 @@ class LazyProphet:
       total_trend = np.sum(trends, axis = 0)
       total_seasonalities = np.sum(seasonalities, axis = 0)
       total_exo = np.sum(exo_predicted, axis = 0)
-      round_cost = self.calc_cost(total_trend + total_seasonalities, i)
+      #Get a measure of complexity: number of splits + any extra variables
+      if self.freq != 0:
+        c = i + self.seasonal_smoothing + 1
+      else:
+        c = i + 1
+      if self.estimator == 'ridge':
+        c += self.poly
+      if self.exogenous is not None:
+          c += np.shape(self.exogenous)[1]
+      round_cost = self.calc_cost(total_trend + total_seasonalities + total_exo, c)
       if i == 0:
         cost = round_cost
-      if round_cost <= cost:
+      if round_cost <= cost or i < self.min_boosting_rounds:
         cost = round_cost
         self.total_trend = total_trend
         self.total_seasonalities = total_seasonalities
@@ -257,7 +289,7 @@ class LazyProphet:
     if self.nested_seasonality:
       total_nested_seasonality = np.sum(nested_seasonalities, axis = 0)
     output = {}
-    output['y'] = self.time_series
+    output['y'] = pd.Series(self.time_series, index = self.time_series_index)
     if self.nested_seasonality:
       yhat = pd.Series(self.total_trend + 
                                 self.total_seasonalities + 
@@ -303,6 +335,8 @@ class LazyProphet:
     output['yhat_lower'] = lower_prediction
     output['seasonality'] = seasonality
     output['trend'] = trend
+    self.output = output
+    self.number_of_rounds = i
     
     return output
 
@@ -379,3 +413,44 @@ class LazyProphet:
     summary['Standard Error'] = se
     
     return summary
+
+  def plot_components(self):
+      summary_dict = self.output
+      if 'Exogenous Prediction' in summary_dict.keys():
+          fig, ax = plt.subplots(4, figsize = (16,16))
+          ax[-2].plot(summary_dict['Exogenous Prediction'], color = 'orange')
+          ax[-2].set_title('Exogenous')
+      else:
+          fig, ax = plt.subplots(3, figsize = (16,16))
+      ax[0].plot(summary_dict['trend'], color = 'orange')
+      ax[0].set_title('Trend')
+      ax[1].plot(summary_dict['seasonality'], color = 'orange')
+      ax[1].set_title('Seasonality')
+      ax[-1].plot(summary_dict['y'], color = 'black')
+      ax[-1].plot(summary_dict['yhat'], color = 'orange')
+      ax[-1].plot(summary_dict['yhat_upper'], 
+                 linestyle = 'dashed', 
+                 alpha = .5,
+                 color = 'orange')
+      ax[-1].plot(summary_dict['yhat_lower'],
+                 linestyle = 'dashed', 
+                 alpha = .5,
+                 color = 'orange')
+      ax[-1].set_title('Fitted')
+      
+      plt.show()
+      
+  def summary(self):
+    try:
+        exo_summary = self.output['Exogenous Summary']
+    except:
+        raise Exception('No exogenous variables to summarize')
+    asterisks = '*'*15
+    summary_dataframe = pd.DataFrame(exo_summary['Coefficient'].round(2), 
+                                     columns = ['Coefficients'],
+                                     index = exo_summary['Coefficient'].index)
+    summary_dataframe['Standard Error'] = exo_summary['Standard Error'].round(2)
+    summary_dataframe['t-Stat'] = exo_summary['t-Stat'].round(2)
+    summary_dataframe['P-Value'] = exo_summary['P-Value'].round(3)
+    print(f'''\n{asterisks}Exogenous Model Results{asterisks}\n''')
+    print(summary_dataframe)
