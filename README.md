@@ -324,14 +324,15 @@ boosted_model = lp.LazyProphet(freq = 365,
 output = boosted_model.fit(y)
 boosted_model.summary()
 ```
+The output is printed to the console, but all values also exist in the output dictionary from the fit() function.
 ```
 ***************Exogenous Model Results***************
 
         Coefficients  Standard Error  t-Stat  P-Value
-High            0.00            0.43    0.00    1.000
-Last           -0.51           13.27   -0.04    0.970
-Bid            -1.54           16.30   -0.09    0.925
-Ask             1.82           16.66    0.11    0.913
-Volume         -0.03            0.01   -2.54    0.011
-VWAP            0.59            0.60    0.98    0.327
+High           -0.27            0.37   -0.74    0.460
+Last            0.17           11.30    0.01    0.988
+Bid             1.76           13.88    0.13    0.899
+Ask            -2.09           14.19   -0.15    0.883
+Volume         -0.02            0.01   -1.80    0.073
+VWAP            1.11            0.51    2.16    0.031
 ```
