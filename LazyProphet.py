@@ -417,11 +417,11 @@ class LazyProphet:
   def plot_components(self):
       summary_dict = self.output
       if 'Exogenous Prediction' in summary_dict.keys():
-          fig, ax = plt.subplots(4, figsize = (16,16))
+          fig, ax = plt.subplots(4, figsize = (8,8))
           ax[-2].plot(summary_dict['Exogenous Prediction'], color = 'orange')
           ax[-2].set_title('Exogenous')
       else:
-          fig, ax = plt.subplots(3, figsize = (16,16))
+          fig, ax = plt.subplots(3, figsize = (8,8))
       ax[0].plot(summary_dict['trend'], color = 'orange')
       ax[0].set_title('Trend')
       ax[1].plot(summary_dict['seasonality'], color = 'orange')
