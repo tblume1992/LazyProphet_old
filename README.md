@@ -364,7 +364,7 @@ boosted_model = lp.LazyProphet(freq = 365,
 output = boosted_model.fit(y)
 forecast = boosted_model.extrapolate(30)
 ```
-Many times we are not sure if the current trend will hold and would like the trend to be dampened over the forecast horizon to have a 0 slope, this can be done with the trend_dampening argument when building the class.  For this metric- a .5 would mean that the trend hits roughly half the value of the unconstrained trend by the end of the forecast horizon.  This is achieved via exponential decay of the slope and is a smooth transition for all involved.
+Many times we are not sure if the current trend will hold and would like the trend to be dampened over the forecast horizon to have a 0 slope, this can be done with the trend_dampening argument when building the class.  For this metric- a .5 would mean that the trend hits roughly half the value of the unconstrained trend by the end of the forecast horizon.  A .1 would mean the trend would hit roughly 90% of it's unconstrained value.  The dampenening is achieved via exponential decay of the slope and is a smooth transition for all involved.
 ```python
 import quandl
 import pandas as pd
