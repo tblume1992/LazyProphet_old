@@ -282,7 +282,7 @@ y = y[-730:]
 
 #create Lazy Prophet class
 boosted_model = lp.LazyProphet(freq = 365, 
-                            estimator = 'mean', 
+                            estimator = 'linear', 
                             max_boosting_rounds = 50,
                             approximate_splits = True,
                             regularization = 1.2)
@@ -292,3 +292,46 @@ output = boosted_model.fit(y)
 boosted_model.plot_components()
 ```
 ![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lazy_plot_components.png?raw=true "Output")
+
+Now let's take a look at exogenous variables which may have an effect on the BTC price. This is meant to be a demonstration using readily available information, the variables we use are just what comes with the Quandl request. 
+
+Exogenous variables are fit in the last step of the boosting loop and all coefficients and standard errors are updated using all boosting rounds so the coefficients most likely are regularized.
+
+Adding extra variables may also make the model want MORE boosting rounds, so we will increase the max_boosting_rounds.
+```python
+import quandl
+import pandas as pd
+import matplotlib.pyplot as plt
+import LazyProphet as lp
+
+#Get bitcoin data
+data = quandl.get("BITSTAMP/USD")
+#let's get our X matrix with the new variables to use
+X = data.drop('Low', axis = 1)
+X = X.iloc[-730:,:]
+y = data['Low']
+y = y[-730:]
+
+#create Lazy Prophet class
+boosted_model = lp.LazyProphet(freq = 365, 
+                            estimator = 'linear', 
+                            max_boosting_rounds = 200,
+                            approximate_splits = True,
+                            regularization = 1.2,
+                            exogenous = X)
+#Fits on just the time series
+#returns a dictionary with the decomposition
+output = boosted_model.fit(y)
+boosted_model.summary()
+```
+```python
+***************Exogenous Model Results***************
+
+        Coefficients  Standard Error  t-Stat  P-Value
+High            0.00            0.43    0.00    1.000
+Last           -0.51           13.27   -0.04    0.970
+Bid            -1.54           16.30   -0.09    0.925
+Ask             1.82           16.66    0.11    0.913
+Volume         -0.03            0.01   -2.54    0.011
+VWAP            0.59            0.60    0.98    0.327
+```
