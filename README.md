@@ -16,7 +16,7 @@ Notes:
 4.  The regularization parameter effects the number of boosting rounds whereas l2 just effects the ridge regression regularization
 
 Basic flow of the algorithm:
-![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lp_flow.png?raw=true "Output 1")
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lp_flow.PNG?raw=true "Output 1")
 
 # Some basic examples: 
 
