@@ -1,5 +1,7 @@
 # LazyProphet
-# pip install LazyProphet
+```
+pip install LazyProphet
+```
 Time Series decomp via gradient boosting with a couple different estimators of trend:
   * ridge: approximates trend via a global fit from a polynomial ridge regression (don't really need ridge since we are boosting but oh well)
   * linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE
@@ -13,7 +15,8 @@ Notes:
 3.  We can approximate where splits should occur for our local estimators (mean and linear) which speeds things up quite a bit 
 4.  The regularization parameter effects the number of boosting rounds whereas l2 just effects the ridge regression regularization
 
-
+Basic flow of the algorithm:
+![alt text](https://github.com/tblume1992/LazyProphet/blob/master/static/lp_flow.png?raw=true "Output 1")
 
 # Some basic examples: 
 
