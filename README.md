@@ -1,4 +1,5 @@
 # LazyProphet
+[![Downloads](https://pepy.tech/badge/lazyprophet)](https://pepy.tech/project/lazyprophet)
 ```
 pip install LazyProphet
 ```
