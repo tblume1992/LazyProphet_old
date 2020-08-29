@@ -5,7 +5,7 @@ pip install LazyProphet
 ```
 Time Series decomp via gradient boosting with a couple different estimators of trend:
   * ridge: approximates trend via a global fit from a polynomial ridge regression (don't really need ridge since we are boosting but oh well)
-  * linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE
+  * linear: approximates trend via a local linear changepoint model done using binary segmented regressions to minimize MAE or MSE
   * mean: approximates trend via local mean change point model
   
 Seasonality can be naive averaging over freq number of time periods or 'harmonic' which calculates seasonality similarly to Prophet using fourier series.
